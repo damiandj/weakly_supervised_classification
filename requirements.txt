@@ -1,3 +1,5 @@
 torch==1.13.*
 torchvision==0.14.*
 torchaudio==0.13.*
+
+tensorboard
