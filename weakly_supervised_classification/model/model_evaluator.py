@@ -1,12 +1,16 @@
+import glob
 import os
 
 import PIL.Image
 import torch
 import torchvision
 
+from weakly_supervised_classification.model.data_loader import Bag
+
 
 class Evaluator:
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, batch_size: int = 64):
+        self.batch_size = batch_size
         self.model = self.load_model(model_path=model_path)
 
         self.transforms = torchvision.transforms.Compose([
@@ -21,7 +25,7 @@ class Evaluator:
         :return: model object
         """
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        device = torch.device('cpu')
+
         return torch.jit.load(model_path, map_location=device)
 
     def _preprocess_batch(self, images_batch):
@@ -31,12 +35,21 @@ class Evaluator:
 
         return bag_images
 
+    def evaluate_dir(self, images_dir):
+        bag = Bag.from_directory(images_dir)
+
+        return self.evaluate_bag(bag)
+
+    def evaluate_bag(self, bag: Bag):
+        batch = bag.images
+
+        return self.evaluate_batch(batch)
+
     @torch.no_grad()
-    def evaluate_batch(self, images_batch, batch_size=64):
+    def evaluate_batch(self, images_batch):
         """
         Evaluates passed list of images.
         :param images_batch: (List[Tuple[PIL.Image, PIL.Image]]) list of PIL.Image objects
-        :param batch_size: (int) number of triples to be processed in one batch
         :return: out_class: List[Tuple[float, float]] - probabilities for each class [different, correct] for each pair
         is added to the list
         """
@@ -44,13 +57,13 @@ class Evaluator:
 
         images_batch = self._preprocess_batch(images_batch)
         outputs = []
-        for batch in images_batch.split(batch_size):
+        for batch in images_batch.split(self.batch_size):
             outputs += self.model(batch.to(next(self.model.parameters()).device))
 
         return outputs
 
 
-eval = Evaluator(os.path.join('checkpoints', 'model.pt'))
-imgs = [PIL.Image.open(os.path.join('bags_eval', '2_9_0_4_6_2_3', i)) for i in os.listdir(os.path.join('bags_eval', '2_9_0_4_6_2_3'))]
-out = eval.evaluate_batch(imgs)
-print(out)
+# eval = Evaluator(os.path.join('asd/checkpoints1', 'model.pt'))
+# imgs = [PIL.Image.open(os.path.join('bags_eval', '7_7_7_2_1_6_7_7_0_0_0', i)) for i in os.listdir(os.path.join('bags_eval', '7_7_7_2_1_6_7_7_0_0_0'))]
+# out = eval.evaluate_batch(imgs)
+# print(out)

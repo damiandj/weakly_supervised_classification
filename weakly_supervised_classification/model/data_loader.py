@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import random
 
@@ -36,11 +38,22 @@ class MnistInstance:
 
 
 class Bag(list):
-    def __init__(self, items):
+    def __init__(self, items=None):
         super().__init__()
-        for __item in items:
-            self.append(__item)
-        self.label = 0
+        if items:
+            for __item in items:
+                self.append(__item)
+        self.label = None
+
+    @classmethod
+    def from_directory(cls, directory_path: str) -> Bag:
+        bag = Bag()
+        for img_path in os.listdir(directory_path):
+            mnist_instance = MnistInstance(image=PIL.Image.open(os.path.join(directory_path, img_path)),
+                                           label=int(os.path.splitext(img_path)[0].split('_')[1]))
+            bag.append(mnist_instance)
+
+        return bag
 
     @property
     def images(self):
@@ -53,6 +66,27 @@ class Bag(list):
         if not isinstance(__object, MnistInstance):
             raise Exception(type(__object))
         super(Bag, self).append(__object)
+
+    def bag_dir(self, save_path: str) -> str:
+        bag_name = "_".join([str(item.label) for item in self])
+        if self.label is not None:
+            bag_dir = os.path.join(save_path, str(self.label), bag_name)
+        else:
+            bag_dir = os.path.join(save_path, bag_name)
+
+        return bag_dir
+
+    def save(self, save_path: str):
+        bag_dir = self.bag_dir(save_path=save_path)
+        os.makedirs(bag_dir, exist_ok=True)
+        for position, item in enumerate(self):
+            item: MnistInstance
+            _item_count = 0
+            item_name = f"{position}_{item.label}_{_item_count}.jpg"
+            while os.path.exists(os.path.join(bag_dir, item_name)):
+                _item_count += 1
+                item_name = f"{position}_{item.label}_{_item_count}.jpg"
+            item.image.save(os.path.join(bag_dir, item_name))
 
 
 class BagCollections(list):
@@ -72,7 +106,7 @@ class MnistBagsDataset(data.Dataset):
 
     def __init__(self, root: str, number_of_bags: int, train: bool = True,
                  transforms: Optional[torchvision.transforms.Compose] = None):
-        self.mnist_data = torchvision.datasets.MNIST(root=root, train=train, download=False)
+        self.mnist_data = torchvision.datasets.MNIST(root=root, train=train, download=True)
         self.number_of_bags = number_of_bags
         self.transforms = transforms
 
@@ -80,7 +114,6 @@ class MnistBagsDataset(data.Dataset):
         self.mnist_data_without_decision_digit_ids = self._prepare_mnist_data_without_decision_digit_ids()
 
         self.__bags = BagCollections()
-        self._prepare_bags()
 
     @property
     def bags(self):
@@ -136,23 +169,9 @@ class MnistBagsDataset(data.Dataset):
         self._remove_bags()
         self._prepare_bags()
 
-    @staticmethod
-    def _save_bag(bag: Bag, save_path: str):
-        bag_name = "_".join([str(item.label) for item in bag])
-        bag_dir = os.path.join(save_path, bag_name)
-        os.makedirs(bag_dir, exist_ok=True)
-        for item in bag:
-            item: MnistInstance
-            _item_count = 0
-            item_name = f"{item.label}_{_item_count}.jpg"
-            while os.path.exists(os.path.join(bag_dir, item_name)):
-                _item_count += 1
-                item_name = f"{item.label}_{_item_count}.jpg"
-            item.image.save(os.path.join(bag_dir, item_name))
-
     def save_bags(self, save_path: str):
         for bag in self.bags:
-            self._save_bag(bag=bag, save_path=save_path)
+            bag.save(save_path=save_path)
 
     def __getitem__(self, item: int):
         bag = self.bags[item]
@@ -174,7 +193,7 @@ def prepare_train_dataloader(number_of_bags: int = 1000, batch_size: int = 16):
                                   train=True,
                                   number_of_bags=number_of_bags,
                                   transforms=train_transforms)
-
+    train_data.regenerate_bags()
     loader = data.DataLoader(dataset=train_data,
                              batch_size=batch_size,
                              shuffle=True,
@@ -201,7 +220,7 @@ def prepare_val_dataloader(number_of_bags: int = 100, batch_size: int = 16):
                                 train=True,
                                 number_of_bags=number_of_bags,
                                 transforms=val_transforms)
-
+    val_data.regenerate_bags()
     loader = data.DataLoader(dataset=val_data,
                              batch_size=batch_size,
                              shuffle=False,
