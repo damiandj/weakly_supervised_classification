@@ -29,7 +29,7 @@ $$z=\sum_{k=1}^K a_k x_k $$
 
 where
 
-$$ a_k = \frac{e^{w^\mathtt{T} \tanh(Vx_k^\mathtt{T})}}{\sum_{j=1}^K e^{w^\mathtt{T} \tanh(Vx_j^{T})}} $$
+$$ a_k = \frac{e^{w^\mathtt{T} \tanh(Vx_k^\mathtt{T})}}{{\sum_{j=1}^K} e^{w^\mathtt{T} \tanh(Vx_j^{T})}} $$
 
 and
 
