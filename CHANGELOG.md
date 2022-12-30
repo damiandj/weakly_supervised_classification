@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 ### Added
-- First version of weakly supervised classification  
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
+
+## [0.1.0] - 2022-12-30
+### Added
+- First version of Weakly Supervised Classification  
