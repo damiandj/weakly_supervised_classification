@@ -16,6 +16,11 @@ but no less than `5` and no more than `250000000`. Label of bag is positive (`1`
 
 Data samples in [assets/data/test_1](assets/data/test_1).
 
+|      ![](assets/test_1_dednsity.png)      |
+|:-----------------------------------------:|
+|  Bag size distribution in test_1 dataset  |
+
+
 Moreover images are normalized with `mean=0.1307` and `std=0.3081`. Normalization is part of the model definition.
 
 ## Model structure
@@ -26,7 +31,7 @@ Both Softmax values and last attentions are returned from model.
 
 | ![](assets/moded_grpah.png) |
 |:---------------------------:|
-|  Fig1. Simple model graph   |
+|     Simple model graph      |
 
 Full model graph in [assets/model_graph_full.pdf](assets/model_graph_full.pdf).
 
@@ -63,15 +68,15 @@ The learning process of one model took about 33 minutes. Tensorboard outputs in 
 
 | ![](assets/train_loss.png) |
 |:--------------------------:|
-|    Fig2. Learning loss     |
+|       Learning loss        |
 
-|  ![](assets/eval_loss.png)  |
-|:---------------------------:|
-|    Fig3. Evaluation loss    |
+| ![](assets/eval_loss.png)  |
+|:--------------------------:|
+|      Evaluation loss       |
 
-|  ![](assets/eval_acc.png)   |
-|:---------------------------:|
-|  Fig4. Evaluation accuracy  |
+| ![](assets/eval_acc.png)  |
+|:-------------------------:|
+|    Evaluation accuracy    |
 
 ## Metrics for Testing
 Each model were tested on testing sets of `10 000` bags based on testing MNIST Dataset. Used metrics:
@@ -110,15 +115,15 @@ The average time of model evaluation on single bag is `6ms` and maximum time is 
 
 | ![](assets/tp/0_2_2_6_5_8_5_7_3_1.jpg)   ![](assets/tp/0_2_2_7_0_2_7_5_6_1_3_9_9.jpg) |
 |:-------------------------------------------------------------------------------------:|
-|                         Fig5. True positives with attentions                          |
+|                            True positives with attentions                             |
 
-|  ![](assets/fp/0_1_3_9_6_2_3.jpg)  ![](assets/fp/2_5_3_5_0.jpg)  |
-|:----------------------------------------------------------------:|
-|              Fig6. False positives with attentions               |
+| ![](assets/fp/0_1_3_9_6_2_3.jpg)  ![](assets/fp/2_5_3_5_0.jpg)  |
+|:---------------------------------------------------------------:|
+|                 False positives with attentions                 |
 
 | ![](assets/fn/0_7_3_1_1_8_4_6_8.jpg)  ![](assets/fn/5_0_0_9_8_4_0_7.jpg) |
 |:------------------------------------------------------------------------:|
-|                  Fig7. False negatives with attentions                   |
+|                     False negatives with attentions                      |
 
 
 ## Summary
