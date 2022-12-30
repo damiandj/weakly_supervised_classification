@@ -29,11 +29,11 @@ $$z=\sum_{k=1}^K a_k x_k $$
 
 where
 
-$$ a_k = \frac{e^{w^\mathtt{T} \tanh(Vx_k^\mathtt{T})}}{{\sum_{j=1}^K} e^{w^\mathtt{T} \tanh(Vx_j^{T})}} $$
+$$ a_k = \frac{e^{w^\mathtt{T} \tanh(Vx_k^\mathtt{T})}}{S} $$
 
 and
 
-$$ \sum_{j=1}^K e^{w^\mathtt{T} \tanh(Vx_j^{T})} $$
+$$ S = \sum_{j=1}^K e^{w^\mathtt{T} \tanh(Vx_j^{T})} $$
 
 ## Learning process
 All experiments were conducted on workstation with Intel(R) Core(TM) i7-10750H CPU (2.60GHz), 32 GB RAM and single GPU NVIDAIA Quadro T1000 (4 GB).
