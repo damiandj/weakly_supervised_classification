@@ -47,12 +47,6 @@ class Evaluator:
 
     @torch.no_grad()
     def evaluate_batch(self, images_batch):
-        """
-        Evaluates passed list of images.
-        :param images_batch: (List[Tuple[PIL.Image, PIL.Image]]) list of PIL.Image objects
-        :return: out_class: List[Tuple[float, float]] - probabilities for each class [different, correct] for each pair
-        is added to the list
-        """
         self.model.eval()
 
         images_batch = self._preprocess_batch(images_batch)
@@ -61,9 +55,3 @@ class Evaluator:
             outputs += self.model(batch.to(next(self.model.parameters()).device))
 
         return outputs
-
-
-# eval = Evaluator(os.path.join('asd/checkpoints1', 'model.pt'))
-# imgs = [PIL.Image.open(os.path.join('bags_eval', '7_7_7_2_1_6_7_7_0_0_0', i)) for i in os.listdir(os.path.join('bags_eval', '7_7_7_2_1_6_7_7_0_0_0'))]
-# out = eval.evaluate_batch(imgs)
-# print(out)

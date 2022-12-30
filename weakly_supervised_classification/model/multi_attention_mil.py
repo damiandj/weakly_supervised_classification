@@ -19,7 +19,53 @@ class Normalize(torch.nn.Module):
         return x
 
 
+class Attention(nn.Module):
+    """
+    Attention module
+    """
+    def __init__(self, _dim: int = 128):
+        super().__init__()
+        self._D = _dim
+        self.attention = nn.Sequential(
+            nn.Linear(self._D, self._D), nn.Tanh(), nn.Linear(self._D, 1)
+        )
+
+        self.fc = nn.Sequential(
+            nn.Linear(self._D, self._D),
+            nn.ReLU(),
+        )
+
+    def forward(self, _input):
+        feature = self.fc(_input)
+
+        attention = self.attention(feature)
+        attention = nn.Softmax(dim=1)(attention)
+        attention = torch.transpose(attention, 2, 1)
+
+        m = torch.matmul(attention, feature)
+        m = m.view(-1, 1 * self._D)
+
+        return feature, attention, m
+
+
+class FirstAttention(Attention):
+    """
+    First attention module
+    """
+    def __init__(self, fc_layer_size: int = 512, _dim: int = 128):
+        super().__init__(_dim=_dim)
+        self.fc_layer_size = fc_layer_size
+
+        self.fc = nn.Sequential(
+            nn.Linear(self.fc_layer_size, self._D),
+            nn.ReLU(),
+        )
+
+
 class MultiAttentionMIL(nn.Module):
+    """
+    Multi Attention Multiple Instance Learning module
+    """
     def __init__(self, num_classes: int = 2, num_attentions: int = 3, fc_layer_size: int = 512):
         super().__init__()
         self.num_classes = num_classes
@@ -27,53 +73,29 @@ class MultiAttentionMIL(nn.Module):
 
         self.__num_features = 512
         self.fc_layer_size = fc_layer_size
-        self.__D = 128
+        self._D = 128
 
         self.model = torchvision.models.resnet18()
         self.model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.model.fc = torch.nn.Sequential(torch.nn.Linear(self.__num_features, self.fc_layer_size))
 
-        normalization = Normalize()
-        self.model = torch.nn.Sequential(normalization, self.model)
+        self.normalization = Normalize()
+        self.first_attention = FirstAttention(fc_layer_size=fc_layer_size, _dim=self._D)
+        self.attention = Attention(_dim=self._D)
 
-        self.fc_first = nn.Sequential(
-            nn.Linear(self.fc_layer_size, self.__D),
-            nn.ReLU(),
-        )
-        self.attention = nn.Sequential(
-            nn.Linear(self.__D, self.__D), nn.Tanh(), nn.Linear(self.__D, 1)
-        )
-
-        self.fc = nn.Sequential(
-            nn.Linear(self.__D, self.__D),
-            nn.ReLU(),
-        )
-
-        self.fc_result = nn.Sequential(nn.Linear(self.__D, self.num_classes),
+        self.fc_result = nn.Sequential(nn.Linear(self._D, self.num_classes),
                                        nn.Sigmoid())
 
     def forward(self, images):
+        images = self.normalization(images)
         feature = torch.stack([self.model(__batch) for __batch in images])
         feature = feature.squeeze(-1).squeeze(-1)
-        feature = self.fc_first(feature)
 
-        attention = self.attention(feature)
-        attention = nn.Softmax(dim=1)(attention)
-        attention = torch.transpose(attention, 2, 1)
-
-        m = torch.matmul(attention, feature)
-        m = m.view(-1, 1 * self.__D)
+        feature, attention, m = self.first_attention(feature)
         m_tot = m
 
-        for _ in range(self.num_attentions):
-            feature = self.fc(feature)
-
-            attention = self.attention(feature)
-            attention = nn.Softmax(dim=1)(attention)
-            attention = torch.transpose(attention, 2, 1)
-
-            m = torch.matmul(attention, feature)
-            m = m.view(-1, 1 * self.__D)
+        for num in range(self.num_attentions):
+            feature, attention, m = self.attention(feature)
             m_tot += m
         result = self.fc_result(m_tot)
 

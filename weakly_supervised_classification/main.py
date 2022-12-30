@@ -72,11 +72,13 @@ def test_models():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--models-directory', help='Models directory, or path to model directory.',
                         type=str, default='checkpoints')
+    parser.add_argument('--save-correct-attentions', help='Saves all attentions images', action='store_true')
     parser.add_argument('--output-directory', help='Output directory path', type=str,
                         default='results_best_model')
     parser.add_argument('--test-data', help='Testing data path', type=str,
                         default='data/test_2')
 
     args = parser.parse_args()
-    tester = Tester(models_path=args.models_directory, data_path=args.test_data, output_path=args.output_directory)
+    tester = Tester(models_path=args.models_directory, data_path=args.test_data, output_path=args.output_directory,
+                    save_correct_attentions=args.save_correct_attentions)
     tester.test()

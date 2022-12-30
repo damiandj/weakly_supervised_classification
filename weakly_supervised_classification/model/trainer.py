@@ -55,6 +55,9 @@ class Logger:
         self.writer.flush()
         self.log(f"\t eval accuracy: {accuracy}, eval loss: {loss}")
 
+    def log_model_graph(self, model, example):
+        self.writer.add_graph(model, example)
+
 
 class Trainer:
     def __init__(self, number_train_of_bags: int = 1000, number_eval_of_bags: int = 1000, num_attentions: int = 2,
@@ -73,6 +76,11 @@ class Trainer:
         self._best_acc_epoch = None
 
         self.logger = Logger()
+        self._log_model()
+
+    def _log_model(self):
+        example = torch.zeros(1, 1, 1, 28, 28).to(self.device)
+        self.logger.log_model_graph(self.model, example)
 
     def _prepare_adam_optimizer(self, lr: float):
         return optim.Adam(self.model.parameters(), lr=lr, betas=(0.9, 0.999), weight_decay=10e-5)

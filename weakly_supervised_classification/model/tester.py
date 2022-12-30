@@ -53,9 +53,13 @@ class Tester:
         body = []
 
         def _precision(tp, fp):
+            if not tp + fp:
+                return 0
             return tp / (tp + fp)
 
         def _recall(tp, fn):
+            if not tp + fn:
+                return 0
             return tp / (tp + fn)
 
         def _accuracy(prec, rec):
@@ -68,6 +72,8 @@ class Tester:
             """
             Balanced data
             """
+            if not prec + rec:
+                return 0
             return 2 * (prec * rec) / (prec + rec)
 
         precisions, recalls, accuracies, f1s = [], [], [], []
