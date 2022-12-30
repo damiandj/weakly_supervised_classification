@@ -16,7 +16,7 @@ but no less than `5` and no more than `250000000`. Label of bag is positive (`1`
 
 Data samples in [assets/data/test_1](assets/data/test_1).
 
-|      ![](assets/test_1_dednsity.png)      |
+| ![](assets/test_1_distribution.png)       |
 |:-----------------------------------------:|
 |  Bag size distribution in test_1 dataset  |
 
