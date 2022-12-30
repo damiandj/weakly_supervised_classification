@@ -1,33 +1,37 @@
 # Summary
 ## Problem statement
-In this research, we proposed method, which can be used to preparing model solving Weakly-supervised classification problem using 
-Multi-Scale Attention-based Multiple Instance Learning based on [arXiv:2209.03041](https://arxiv.org/abs/2209.03041).
+In this research the method to solve Weakly-supervised classification problem using 
+Multi-Scale Attention-based Multiple Instance Learning will be presented. Based on [arXiv:2209.03041](https://arxiv.org/abs/2209.03041).
 
+In this case the data point is set (bag) of [MNIST](https://pytorch.org/vision/main/generated/torchvision.datasets.MNIST.html) images
+with only one label: correct if at least one `7` is in bag and negative otherwise.
 
-The trained model should classify bags with and without number `7`.
-Notably, an application of the Multi-Scale Attention-based approach provides insight into the contribution of each instance to the bag label. 
+The trained model should classify bags into those with and without `7`.
+Notably, an application of the Multi-Scale Attention-based approach provides insight into the contribution of each instance to the bag label.
+In other words, the probability that a particular number in the bag is `7` is returned.
 
 ## Data
-In this specific case each training, validating and testing bag consists of on average `10` images with standard deviation of `2`, but no less
-than `5` and no more than `250000000`. Label of bag is positive (`1`) if there is at least one `7` in a data point and zero (`0`) otherwise.
+In this specific case each training, validating and testing bag consists of on average `10` images with standard deviation of `2` (normal distribution),
+but no less than `5` and no more than `250000000`. Label of bag is positive (`1`) if there is at least one `7` in a data point and zero (`0`) otherwise.
 
 Data samples in [assets/data/test_1](assets/data/test_1).
 
 Moreover images are normalized with `mean=0.1307` and `std=0.3081`. Normalization is part of the model definition.
 
 ## Model structure
-The proposed approach uses resnet18 as a feature extractor. Input images dimension was changed to `1`. 
+The proposed approach uses `resnet18` as a feature extractor. Input images dimension is changed to `1`. 
 Then three Attention blocks computes attentions and images features weighted by attentions.
-The final fc layer returns values (Softmax) for each class: positive and negative.
+The final fully connected layer returns values (Softmax) for each class: positive and negative.
+Both Softmax values and last attentions are returned from model.
 
-|  ![](assets/moded_grpah.png)  |
-|:-----------------------------:|
-|       Fig1. Model graph       |
+| ![](assets/moded_grpah.png) |
+|:---------------------------:|
+|  Fig1. Simple model graph   |
 
 Full model graph in [assets/model_graph_full.pdf](assets/model_graph_full.pdf).
 
 ### Attention function 
-An attention layer in aggregation layer is defined as a weighted sum:
+An attention layer is defined as a weighted sum:
 
 $$z=\sum_{k=1}^K a_k x_k $$
 
@@ -42,7 +46,10 @@ $$ S = \sum_{j=1}^K e^{w^\mathtt{T} \tanh(Vx_j^{T})} $$
 ## Learning process
 All experiments were conducted on workstation with Intel(R) Core(TM) i7-10750H CPU (2.60GHz), 32 GB RAM and single GPU NVIDAIA Quadro T1000 (4 GB).
 
-At the beginning of each training epoch new set of training bags are created. This prevents overwriting of the model and speeds up learning.
+Training and validation code details in [README.md](README.md).
+
+At the beginning of each training epoch new set of training bags are created. This prevents overwriting of the model 
+and allows for more frequent validation of the model.
 The model are trained with learning rate of `5e-05`, weight_decay of `10e-5` and with Adam optimization algorithm.
 
 From each learning process only one model is saved (after an epoch with best `validation_accuracy`).
@@ -97,7 +104,7 @@ The model with highest `F1` value (model `5`) were tested on second testing data
 |---------|-------------|----------|------------|--------|
 |       5 |      0.9907 |   0.9562 |     0.9734 | 0.9731 |
 
-The average time of model evaluation on single bag is `6ms` and maximum time is `32ms`. 
+The average time of model evaluation on single bag is `6ms` and maximum time is `32ms` and depends on the size of bag. 
 
 ### Examples
 
@@ -115,7 +122,7 @@ The average time of model evaluation on single bag is `6ms` and maximum time is 
 
 
 ## Summary
-Proposed method and model to solve given problem obtain high metric values (`99% precision` and `96% recall`).
+Proposed method to solve given problem obtain high metric values (`99% precision` and `96% recall`).
 
 Probabilities given form attention layer in most cases allow to correctly indicate the searched number.
 
